@@ -208,37 +208,37 @@ void parseIncomingCommands() {
 
 
     if (command == 0) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 10) {
-      Blynk.virtualWrite(V16, command );
+      Blynk.virtualWrite(V10, command );
     }
     if (command == 20) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 30) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 40) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 50) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 60) {
-     Blynk.virtualWrite(V16, command);
+     Blynk.virtualWrite(V10, command);
     }
     if (command == 70) {
-     Blynk.virtualWrite(V16, command);
+     Blynk.virtualWrite(V10, command);
     }
     if (command == 80) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 90) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
     if (command == 100) {
-      Blynk.virtualWrite(V16, command);
+      Blynk.virtualWrite(V10, command);
     }
 
   }
@@ -321,7 +321,7 @@ BLYNK_WRITE(V6) {
 BLYNK_WRITE(V7) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
-    sendDataCentral(23);
+    sendDataCentral(7);
     display.centeredDisplay("Start/", "Faster", D_DELAY);
   }
 }
@@ -329,7 +329,7 @@ BLYNK_WRITE(V7) {
 BLYNK_WRITE(V8) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
-    sendDataCentral(24);
+    sendDataCentral(8);
     display.centeredDisplay("Slower", D_DELAY);
   }
 }
@@ -337,7 +337,7 @@ BLYNK_WRITE(V8) {
 BLYNK_WRITE(V9) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
-    sendDataCentral(24);
+    sendDataCentral(9);
     display.centeredDisplay("Stop", D_DELAY);
   }
 }

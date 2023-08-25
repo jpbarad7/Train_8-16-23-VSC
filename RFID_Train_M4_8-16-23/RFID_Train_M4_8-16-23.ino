@@ -115,57 +115,57 @@ void sendAndDisplayCommand(int trainCommandIndex) {
       break;
 
     case 8:  // Speed 80%:
-      sendDataCentral(7);
+      sendDataCentral(8);
       display.centeredDisplay("Speed 80%", D_DELAY);
       break;
 
     case 9:  // Speed 100%:
-      sendDataCentral(7);
+      sendDataCentral(9);
       display.centeredDisplay("Speed 100%", D_DELAY);
       break;
 
     case 10:  // Park Trigger 1:
       display.centeredDisplay("Park", "trigger 1", D_DELAY);
-      sendDataCentral(8);
+      sendDataCentral(10);
       break;
 
     case 11:  // Park Trigger 2:
-      sendDataCentral(9);
+      sendDataCentral(11);
       display.centeredDisplay("Park", "trigger 2", D_DELAY);
       break;
 
     case 12:  // Park:
-      sendDataCentral(10);
+      sendDataCentral(12);
       display.centeredDisplay("Park", D_DELAY);
       break;
 
     case 13:  // Station 1:
-      sendDataCentral(11);
+      sendDataCentral(13);
       display.centeredDisplay("Station 1", D_DELAY);
       break;
 
     case 14:  // Station 2:
-      sendDataCentral(12);
+      sendDataCentral(14);
       display.centeredDisplay("Station 2", D_DELAY);
       break;
 
     case 15:  // Station 3:
-      sendDataCentral(13);
+      sendDataCentral(15);
       display.centeredDisplay("Station 3", D_DELAY);
       break;      
 
     case 16:  // Station 4:
-      sendDataCentral(14);
+      sendDataCentral(16);
       display.centeredDisplay("Station 4", D_DELAY);
       break;
 
     case 17:  // Station 5:
-      sendDataCentral(15);
+      sendDataCentral(17);
       display.centeredDisplay("Station 5", D_DELAY);
       break;
 
     case 18:  // Station 6:
-      sendDataCentral(16);
+      sendDataCentral(18);
       display.centeredDisplay("Station 6", D_DELAY);
       break;
 
