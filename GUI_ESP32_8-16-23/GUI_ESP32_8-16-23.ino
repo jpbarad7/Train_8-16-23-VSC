@@ -1,9 +1,9 @@
 #define BLYNK_TEMPLATE_ID "TMPL27oFosZB8"
-#define BLYNK_TEMPLATE_NAME "Quickstart Template"
+#define BLYNK_TEMPLATE_NAME "Deck Train"
 #define BLYNK_AUTH_TOKEN "HGJM2L_Z9bSIUmTeMgHWPZP1KpRbEHt3"
 
 // Diplay parameters
-#define D_HEIGHT 64  //Display heighy
+#define D_HEIGHT 64  //Display height
 #define D_WIDTH 128  //Display width
 
 // Determines how long text displayed prior to being cleared from the screen
@@ -61,21 +61,186 @@ Adafruit_SH1107_Ext display = Adafruit_SH1107_Ext(D_HEIGHT, D_WIDTH, &Wire, 1000
 BlynkTimer timer;  //Using blynk timer but could also use SimpleTimer
 char auth[] = BLYNK_AUTH_TOKEN;
 
-//  char ssid[] = "SkyWifi";
-//  char pass[] = "SkyWiFi8589!";
+char ssid[] = "SkyWiFi";
+char pass[] = "SkyWiFi8589!";
+
 //  char ssid[] = "Train";
 //  char pass[] = "Photon8589";
-char ssid[] = "JPB iPhone";
-char pass[] = "JPBarad7";
 
 
 // This function is called every time the device is connected to the Blynk.Cloud
 
 BLYNK_CONNECTED() {
-  sendDataCentral(22);  //Train Ready Command
+  sendDataCentral(39);  //Train Ready Command
   display.centeredDisplay("Wifi", "Connected", D_DELAY);
 }
 
+
+
+void setup() {
+
+  //Serial1 connect the GUI board to the central board
+  Serial1.begin(115200);
+
+  //Display Settings
+  display.begin(0x3C, true);  // Address 0x3C default
+  display.setRotation(3);
+  display.setTextSize(2);
+  display.setTextColor(SH110X_WHITE);
+  display.setCursor(0, 0);
+  display.clearDisplay();
+  display.display();
+
+  Blynk.begin(auth, ssid, pass);
+  // You can also specify server:
+  // Blynk.begin(auth, ssid, pass, "blynk.cloud", 80);
+  // Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
+
+  // Setup a function to be called every second
+  // timer.setInterval(1000L, myTimerEvent);
+
+  Blynk.virtualWrite(V1, LOW);     // Lights OFF
+  Blynk.virtualWrite(V2, LOW);     // Smoke OFF
+  Blynk.virtualWrite(V3, LOW);     // RFID sensor OFF
+  Blynk.virtualWrite(V4, LOW);     // Park OFF
+  Blynk.virtualWrite(V5, HIGH);    // Sound ON
+  Blynk.virtualWrite(V6, HIGH);    // Direction FWD  
+
+}
+
+
+void loop() {
+  Blynk.run();
+  parseIncomingCommands();
+  timer.run();
+  display.timerRun();
+}
+
+
+  // Helper Functions
+
+void virtualWrite(int vPin, int state) {
+  Blynk.virtualWrite(vPin, state);
+}
+
+void virtualWrite(int vPin, int state, ulong delay) {
+  timer.setTimeout(delay, [=]() {
+    Blynk.virtualWrite(vPin, state);
+  });
+}
+
+void sendDataCentral(int data, unsigned long int delay) {
+  if (!delay) {  //delay is 0, execute immediately
+    if (Serial1.availableForWrite()) {
+      Serial1.write(data);
+    }
+  } else {  //delay is longer than 0, execute after delay through timer library
+    timer.setTimeout(delay,
+                     [=]() {
+                       Serial1.write(data);
+                     });
+  }
+}
+
+int receiveCentralData() {
+  if (Serial1.available()) {
+    return Serial1.read();
+  } else return -1;
+}
+
+  // Code to receive station information from the central board sent to it by the RFID tag reader board
+  // Needs to be called in loop
+  
+void parseIncomingCommands() {
+  int command = receiveCentralData();
+  if (command > -1) {
+    if (command == 11) {
+      //turns on station1 LED
+      virtualWrite(V25, 1);
+      virtualWrite(V26, 0);
+      virtualWrite(V27, 0);
+      virtualWrite(V28, 0);
+      virtualWrite(V29, 0);
+      virtualWrite(V30, 0);
+    }
+    if (command == 12) {
+      virtualWrite(V25, 0);
+      virtualWrite(V26, 1);
+      virtualWrite(V27, 0);
+      virtualWrite(V28, 0);
+      virtualWrite(V29, 0);
+      virtualWrite(V30, 0);
+    }
+    if (command == 13) {
+      virtualWrite(V25, 0);
+      virtualWrite(V26, 0);
+      virtualWrite(V27, 1);
+      virtualWrite(V28, 0);
+      virtualWrite(V29, 0);
+      virtualWrite(V30, 0);
+    }
+    if (command == 14) {
+      virtualWrite(V25, 0);
+      virtualWrite(V26, 0);
+      virtualWrite(V27, 0);
+      virtualWrite(V28, 1);
+      virtualWrite(V29, 0);
+      virtualWrite(V30, 0);
+    }
+    if (command == 15) {
+      virtualWrite(V25, 0);
+      virtualWrite(V26, 0);
+      virtualWrite(V27, 0);
+      virtualWrite(V28, 0);
+      virtualWrite(V29, 1);
+      virtualWrite(V30, 0);
+    }
+    if (command == 16) {
+      virtualWrite(V25, 0);
+      virtualWrite(V26, 0);
+      virtualWrite(V27, 0);
+      virtualWrite(V28, 0);
+      virtualWrite(V29, 0);
+      virtualWrite(V30, 1);
+    }
+
+
+    if (command == 0) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 10) {
+      Blynk.virtualWrite(V16, command );
+    }
+    if (command == 20) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 30) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 40) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 50) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 60) {
+     Blynk.virtualWrite(V16, command);
+    }
+    if (command == 70) {
+     Blynk.virtualWrite(V16, command);
+    }
+    if (command == 80) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 90) {
+      Blynk.virtualWrite(V16, command);
+    }
+    if (command == 100) {
+      Blynk.virtualWrite(V16, command);
+    }
+
+  }
+}
 
 
 // GUI activated Train function controls
@@ -103,17 +268,6 @@ BLYNK_WRITE(V2) {
   }
 }
 
-BLYNK_WRITE(V5) {
-  int pinValue = param.asInt();
-  if (pinValue == 1) {
-    sendDataCentral(161);
-    display.centeredDisplay("Sound ON", D_DELAY);
-  } else if (pinValue == 0) {
-    sendDataCentral(160);
-    display.centeredDisplay("Sound OFF", D_DELAY);
-  }
-}
-
 BLYNK_WRITE(V3) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
@@ -133,6 +287,17 @@ BLYNK_WRITE(V4) {
   } else if (pinValue == 0) {
     sendDataCentral(252);
     display.centeredDisplay("Park OFF", D_DELAY);
+  }
+}
+
+BLYNK_WRITE(V5) {
+  int pinValue = param.asInt();
+  if (pinValue == 1) {
+    sendDataCentral(161);
+    display.centeredDisplay("Sound ON", D_DELAY);
+  } else if (pinValue == 0) {
+    sendDataCentral(160);
+    display.centeredDisplay("Sound OFF", D_DELAY);
   }
 }
 
@@ -171,7 +336,7 @@ BLYNK_WRITE(V9) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
     sendDataCentral(24);
-    display.centeredDisplay("Slower", D_DELAY);
+    display.centeredDisplay("Stop", D_DELAY);
   }
 }
 
@@ -252,7 +417,7 @@ BLYNK_WRITE(V50) {                // AM F10
   int pinValue = param.asInt();
   if (pinValue == 1) {
     sendDataCentral(50);
-    display.centeredDisplay("Shoveling", "coal", D_DELAY);
+    display.centeredDisplay("Coal", "shoveling", D_DELAY);
   }
 }
 
@@ -490,136 +655,6 @@ BLYNK_WRITE(V79) {                // K3 Open F14
 }
 
 
-void setup() {
-
-  //Serial1 connect the GUI board to the central board
-  Serial1.begin(115200);
-
-  //Display Settings
-  display.begin(0x3C, true);  // Address 0x3C default
-  display.setRotation(3);
-  display.setTextSize(2);
-  display.setTextColor(SH110X_WHITE);
-  display.setCursor(0, 0);
-  display.clearDisplay();
-  display.display();
-
-  Blynk.begin(auth, ssid, pass);
-  // You can also specify server:
-  // Blynk.begin(auth, ssid, pass, "blynk.cloud", 80);
-  // Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
-
-  // Setup a function to be called every second
-  // timer.setInterval(1000L, myTimerEvent);
-
-  Blynk.virtualWrite( V0, LOW);     // Lights OFF
-  Blynk.virtualWrite( V5, LOW);     // Smoke OFF
-  Blynk.virtualWrite( V6, HIGH);    // Sound ON
-  Blynk.virtualWrite(V25, LOW);     // RFID sensor OFF
-  Blynk.virtualWrite(V26, LOW);     // Park OFF
-  Blynk.virtualWrite(V27, HIGH);    // Direction FWD  
-
-}
 
 
-void loop() {
-  Blynk.run();
-  parseIncomingCommands();
-  timer.run();
-  display.timerRun();
-}
 
-
-  // Helper Functions
-
-void virtualWrite(int vPin, int state) {
-  Blynk.virtualWrite(vPin, state);
-}
-
-void virtualWrite(int vPin, int state, ulong delay) {
-  timer.setTimeout(delay, [=]() {
-    Blynk.virtualWrite(vPin, state);
-  });
-}
-
-void sendDataCentral(int data, unsigned long int delay) {
-  if (!delay) {  //delay is 0, execute immediately
-    if (Serial1.availableForWrite()) {
-      Serial1.write(data);
-    }
-  } else {  //delay is longer than 0, execute after delay through timer library
-    timer.setTimeout(delay,
-                     [=]() {
-                       Serial1.write(data);
-                     });
-  }
-}
-
-int receiveCentralData() {
-  if (Serial1.available()) {
-    return Serial1.read();
-  } else return -1;
-}
-
-  // Code to receive station information from the central board sent to it by the RFID tag reader board
-  // Needs to be called in loop
-  
-void parseIncomingCommands() {
-  int command = receiveCentralData();
-  if (command > -1) {
-    if (command == 11) {
-      //turns on station1 LED
-      virtualWrite(V28, 1);
-      //turns off station1 LED after STATION_LED_DURATION
-      virtualWrite(V28, 0, STATION_LED_DURATION);
-    }
-    if (command == 12) {
-      virtualWrite(V29, 1);
-      virtualWrite(V29, 0, STATION_LED_DURATION);
-    }
-    if (command == 13) {
-      virtualWrite(V30, 1);
-      virtualWrite(V30, 0, STATION_LED_DURATION);
-    }
-    if (command == 14) {
-      virtualWrite(V31, 1);
-      virtualWrite(V31, 0, STATION_LED_DURATION);
-    }
-
-
-    if (command == 0) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 10) {
-      Blynk.virtualWrite(V16, command );
-    }
-    if (command == 20) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 30) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 40) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 50) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 60) {
-     Blynk.virtualWrite(V16, command);
-    }
-    if (command == 70) {
-     Blynk.virtualWrite(V16, command);
-    }
-    if (command == 80) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 90) {
-      Blynk.virtualWrite(V16, command);
-    }
-    if (command == 100) {
-      Blynk.virtualWrite(V16, command);
-    }
-
-  }
-}

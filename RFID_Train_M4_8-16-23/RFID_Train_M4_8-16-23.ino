@@ -99,62 +99,72 @@ void sendAndDisplayCommand(int trainCommandIndex) {
       display.centeredDisplay("Bell", D_DELAY);
       break;
 
-    case 5:  // Speed - slow:
+    case 5:  // Speed 20%:
       sendDataCentral(5);
-      display.centeredDisplay("Slow", "Speed", D_DELAY);
+      display.centeredDisplay("Speed 20%", D_DELAY);
       break;
 
-    case 6:  // Speed - medium:
+    case 6:  // Speed 40%:
       sendDataCentral(6);
-      display.centeredDisplay("Medium", "Speed", D_DELAY);
+      display.centeredDisplay("Speed 40%", D_DELAY);
       break;
 
-    case 7:  // Speed - fast:
+    case 7:  // Speed 60%:
       sendDataCentral(7);
-      display.centeredDisplay("Fast", "Speed", D_DELAY);
+      display.centeredDisplay("Speed 60%", D_DELAY);
       break;
 
-    case 8:  // Park Trigger 1:
+    case 8:  // Speed 80%:
+      sendDataCentral(7);
+      display.centeredDisplay("Speed 80%", D_DELAY);
+      break;
+
+    case 9:  // Speed 100%:
+      sendDataCentral(7);
+      display.centeredDisplay("Speed 100%", D_DELAY);
+      break;
+
+    case 10:  // Park Trigger 1:
       display.centeredDisplay("Park", "trigger 1", D_DELAY);
       sendDataCentral(8);
       break;
 
-    case 9:  // Park Trigger 2:
+    case 11:  // Park Trigger 2:
       sendDataCentral(9);
       display.centeredDisplay("Park", "trigger 2", D_DELAY);
       break;
 
-    case 10:  // Park:
+    case 12:  // Park:
       sendDataCentral(10);
       display.centeredDisplay("Park", D_DELAY);
       break;
 
-    case 11:  // Station 1:
+    case 13:  // Station 1:
       sendDataCentral(11);
       display.centeredDisplay("Station 1", D_DELAY);
       break;
 
-    case 12:  // Station 2:
+    case 14:  // Station 2:
       sendDataCentral(12);
       display.centeredDisplay("Station 2", D_DELAY);
       break;
 
-    case 13:  // Station 3:
+    case 15:  // Station 3:
       sendDataCentral(13);
       display.centeredDisplay("Station 3", D_DELAY);
       break;      
 
-    case 14:  // Station 4:
+    case 16:  // Station 4:
       sendDataCentral(14);
       display.centeredDisplay("Station 4", D_DELAY);
       break;
 
-    case 15:  // Station 5:
+    case 17:  // Station 5:
       sendDataCentral(15);
       display.centeredDisplay("Station 5", D_DELAY);
       break;
 
-    case 16:  // Station 6:
+    case 18:  // Station 6:
       sendDataCentral(16);
       display.centeredDisplay("Station 6", D_DELAY);
       break;

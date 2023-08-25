@@ -7,9 +7,9 @@
 //Pin Definitions
 #define RST_PIN 13
 #define SS_PIN 12
-#define BUTTON_A 5
+#define BUTTON_A 9
 #define BUTTON_B 6
-#define BUTTON_C 9
+#define BUTTON_C 5
 
 // Diplay parameters
 #define D_HEIGHT 64   //Display height

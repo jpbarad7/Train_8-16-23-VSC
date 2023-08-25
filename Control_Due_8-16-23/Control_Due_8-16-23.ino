@@ -73,7 +73,7 @@ void parseIncomingData() {
 
   if (RFID_data >= 11 && RFID_data <= 14) {sendDataGui(RFID_data);}
 
-  if ((GUI_data == 22) && (RFID_READY == LOW) && (active == 0)) {   
+  if ((GUI_data == 39) && (RFID_READY == LOW) && (active == 0)) {   
 
     sendDataDccpp("<0>");                                 // Turns power to DCC++ rails (communication lines) off
     sendDataDccpp("<1>", 100);                            // Turns power to DCC++ rails on 
@@ -83,7 +83,7 @@ void parseIncomingData() {
     active = -1;
   }
 
-  if ((GUI_data != 22) && (active == -1)) {
+  if ((GUI_data != 39) && (active == -1)) {
 
     if (GUI_data >= 0) {display.centeredDisplay("GUI Cmd", "Received" ,D_DELAY );}
     if (RFID_data > 0) {display.centeredDisplay("RFID Cmd", "Received" , D_DELAY);}
