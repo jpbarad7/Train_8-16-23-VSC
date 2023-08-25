@@ -69,12 +69,10 @@ char pass[] = "SkyWiFi8589!";
 
 
 // This function is called every time the device is connected to the Blynk.Cloud
-
 BLYNK_CONNECTED() {
   sendDataCentral(39);  //Train Ready Command
   display.centeredDisplay("Wifi", "Connected", D_DELAY);
 }
-
 
 
 void setup() {
@@ -105,7 +103,12 @@ void setup() {
   Blynk.virtualWrite(V4, LOW);     // Park OFF
   Blynk.virtualWrite(V5, HIGH);    // Sound ON
   Blynk.virtualWrite(V6, HIGH);    // Direction FWD  
-
+  Blynk.virtualWrite(V25, LOW);    // Station 1 LED OFF
+  Blynk.virtualWrite(V26, LOW);    // Station 2 LED OFF
+  Blynk.virtualWrite(V27, LOW);    // Station 3 LED OFF
+  Blynk.virtualWrite(V28, LOW);    // Station 4 LED OFF
+  Blynk.virtualWrite(V29, LOW);    // Station 5 LED OFF
+  Blynk.virtualWrite(V30, LOW);    // Station 6 LED OFF  
 }
 
 
@@ -155,8 +158,7 @@ void parseIncomingCommands() {
   int command = receiveCentralData();
   if (command > -1) {
     if (command == 11) {
-      //turns on station1 LED
-      virtualWrite(V25, 1);
+      virtualWrite(V25, 1);        // turns on Station 1 LED and others off
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
       virtualWrite(V28, 0);
@@ -165,7 +167,7 @@ void parseIncomingCommands() {
     }
     if (command == 12) {
       virtualWrite(V25, 0);
-      virtualWrite(V26, 1);
+      virtualWrite(V26, 1);         // turns on Station 2 LED and others off
       virtualWrite(V27, 0);
       virtualWrite(V28, 0);
       virtualWrite(V29, 0);
@@ -174,7 +176,7 @@ void parseIncomingCommands() {
     if (command == 13) {
       virtualWrite(V25, 0);
       virtualWrite(V26, 0);
-      virtualWrite(V27, 1);
+      virtualWrite(V27, 1);         // turns on Station 3 LED and others off
       virtualWrite(V28, 0);
       virtualWrite(V29, 0);
       virtualWrite(V30, 0);
@@ -183,7 +185,7 @@ void parseIncomingCommands() {
       virtualWrite(V25, 0);
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
-      virtualWrite(V28, 1);
+      virtualWrite(V28, 1);         // turns on Station 4 LED and others off
       virtualWrite(V29, 0);
       virtualWrite(V30, 0);
     }
@@ -192,7 +194,7 @@ void parseIncomingCommands() {
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
       virtualWrite(V28, 0);
-      virtualWrite(V29, 1);
+      virtualWrite(V29, 1);         // turns on Station 5 LED and others off
       virtualWrite(V30, 0);
     }
     if (command == 16) {
@@ -201,7 +203,7 @@ void parseIncomingCommands() {
       virtualWrite(V27, 0);
       virtualWrite(V28, 0);
       virtualWrite(V29, 0);
-      virtualWrite(V30, 1);
+      virtualWrite(V30, 1);         // turns on Station 6 LED and others off
     }
 
 
