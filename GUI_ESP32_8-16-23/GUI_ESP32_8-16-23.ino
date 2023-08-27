@@ -21,6 +21,10 @@
 #include <BlynkSimpleEsp32.h>
 #include <Adafruit_SH1107_Ext.h>
 
+int train_speed = 0;
+int train_speed_hold = 0;
+
+
 // Function Declarations
 // virtualWrite replaces Blynk.virtualWrite
 
@@ -102,7 +106,8 @@ void setup() {
   Blynk.virtualWrite(V3, LOW);     // RFID sensor OFF
   Blynk.virtualWrite(V4, LOW);     // Park OFF
   Blynk.virtualWrite(V5, HIGH);    // Sound ON
-  Blynk.virtualWrite(V6, HIGH);    // Direction FWD  
+  Blynk.virtualWrite(V6, HIGH);    // Direction FWD 
+  Blynk.virtualWrite(V10, LOW);    // Speed = 0 
   Blynk.virtualWrite(V25, LOW);    // Station 1 LED OFF
   Blynk.virtualWrite(V26, LOW);    // Station 2 LED OFF
   Blynk.virtualWrite(V27, LOW);    // Station 3 LED OFF
@@ -151,13 +156,16 @@ int receiveCentralData() {
   } else return -1;
 }
 
-  // Code to receive station information from the central board sent to it by the RFID tag reader board
-  // Needs to be called in loop
+
+// Code to receive station information from the central board sent to it by the RFID tag reader board
+// Needs to be called in loop
   
 void parseIncomingCommands() {
   int command = receiveCentralData();
+
+// Sends Station # to GUI
   if (command > -1) {
-    if (command == 11) {
+    if (command == 25) {
       virtualWrite(V25, 1);        // turns on Station 1 LED and others off
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
@@ -165,7 +173,7 @@ void parseIncomingCommands() {
       virtualWrite(V29, 0);
       virtualWrite(V30, 0);
     }
-    if (command == 12) {
+    if (command == 26) {
       virtualWrite(V25, 0);
       virtualWrite(V26, 1);         // turns on Station 2 LED and others off
       virtualWrite(V27, 0);
@@ -173,7 +181,7 @@ void parseIncomingCommands() {
       virtualWrite(V29, 0);
       virtualWrite(V30, 0);
     }
-    if (command == 13) {
+    if (command == 27) {
       virtualWrite(V25, 0);
       virtualWrite(V26, 0);
       virtualWrite(V27, 1);         // turns on Station 3 LED and others off
@@ -181,7 +189,7 @@ void parseIncomingCommands() {
       virtualWrite(V29, 0);
       virtualWrite(V30, 0);
     }
-    if (command == 14) {
+    if (command == 28) {
       virtualWrite(V25, 0);
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
@@ -189,7 +197,7 @@ void parseIncomingCommands() {
       virtualWrite(V29, 0);
       virtualWrite(V30, 0);
     }
-    if (command == 15) {
+    if (command == 29) {
       virtualWrite(V25, 0);
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
@@ -197,7 +205,7 @@ void parseIncomingCommands() {
       virtualWrite(V29, 1);         // turns on Station 5 LED and others off
       virtualWrite(V30, 0);
     }
-    if (command == 16) {
+    if (command == 30) {
       virtualWrite(V25, 0);
       virtualWrite(V26, 0);
       virtualWrite(V27, 0);
@@ -206,46 +214,18 @@ void parseIncomingCommands() {
       virtualWrite(V30, 1);         // turns on Station 6 LED and others off
     }
 
-
-    if (command == 0) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 10) {
-      Blynk.virtualWrite(V10, command );
-    }
-    if (command == 20) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 30) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 40) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 50) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 60) {
-     Blynk.virtualWrite(V10, command);
-    }
-    if (command == 70) {
-     Blynk.virtualWrite(V10, command);
-    }
-    if (command == 80) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 90) {
-      Blynk.virtualWrite(V10, command);
-    }
-    if (command == 100) {
-      Blynk.virtualWrite(V10, command);
-    }
+//  Sends train_speed data to GUI
+    if (command >= 100) {              
+      train_speed = (command - 100);  
+      virtualWrite(V10, train_speed);
+    } 
 
   }
 }
 
 
 // GUI activated Train function controls
+// Sent from ESP32 to Due
 // ** Switch ON / OFF **
 
 BLYNK_WRITE(V1) {
@@ -315,7 +295,7 @@ BLYNK_WRITE(V6) {
 }
 
 
-// GUI activated Train function controls
+// GUI activated Train function controls (Start / Faster speed, Slower speed, Stop)
 // ** Press ON / Release OFF **
 
 BLYNK_WRITE(V7) {
@@ -344,8 +324,7 @@ BLYNK_WRITE(V9) {
 
 
 // GUI activated instantaneous sounds (push button)
-
-// V41 - V64 Are the sounds of the American Mogul
+// American Mogul (V41 - V64)
 
 BLYNK_WRITE(V41) {                // AM F1
   int pinValue = param.asInt();
@@ -386,7 +365,7 @@ BLYNK_WRITE(V45) {                // AM Open F5
   }
 }
 
-BLYNK_WRITE(V46) {                // AM F6 is Mute ON/OFF activated by V5 (Sound ON/OFF)
+BLYNK_WRITE(V46) {                // AM Open F6
   int pinValue = param.asInt();
   if (pinValue == 1) {
   } else if (pinValue == 0) {
@@ -400,7 +379,7 @@ BLYNK_WRITE(V47) {                // AM Open F7
   }
 }
 
-BLYNK_WRITE(V48) {                // AM Open F8
+BLYNK_WRITE(V48) {                // AM F9 is Mute ON/OFF activated by V5 function (Sound ON/OFF)
   int pinValue = param.asInt();
   if (pinValue == 1) {
   } else if (pinValue == 0) {
@@ -531,7 +510,7 @@ BLYNK_WRITE(V64) {                // AM Open F24
 }
 
 
-// V65 - V79 Are the sounds/functions of the K3 Stainz
+// K3 Stainz sounds/function (V65 - V79)
 
 BLYNK_WRITE(V65) {                // K3 F0
   int pinValue = param.asInt();

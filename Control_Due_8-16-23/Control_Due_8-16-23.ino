@@ -36,6 +36,7 @@ int smoke_switch = 0;
 int sas = 0;
 int train_direction = 1;
 int train_speed = 0;
+int train_speed_hold = 0;
 int speed_switch = 0;
 
 
@@ -85,16 +86,15 @@ void parseIncomingData() {
     GUI_data = Serial2.read();
     RFID_data = Serial1.read();
 
-// Stations: RFID data 11 is station 1 .. RFID data 14 is station 4
 // Relays data received from the RFID board re station 1-4 tags to the ESP32 GUI
 
-  if (RFID_data >= 11 && RFID_data <= 14) {sendDataGui(RFID_data);}
+  if (RFID_data >= 20 && RFID_data <= 44) {sendDataGui(RFID_data);}
 
   if ((GUI_data == 39) && (RFID_READY == LOW) && (active == 0)) {   
 
     sendDataDccpp("<0>");                                 // Turns power to DCC++ rails (communication lines) off
     sendDataDccpp("<1>", 100);                            // Turns power to DCC++ rails on 
-
+    delay(3000);                                          // Pleasing interval between Wifi Connected and Train Ready
     sendDataDccpp("<f 3 184>", 200);
     display.centeredDisplay("Train", "Ready", 1200);
     active = -1;
@@ -106,7 +106,8 @@ void parseIncomingData() {
     if (RFID_data > 0) {display.centeredDisplay("RFID Cmd", "Received" , D_DELAY);}
   }
 
-//  Train functions (lights, sound, smoke, park, RFID sensor, Direction) - ON / OFF SWITCH control
+
+//  GUI initiated train functions (lights, sound, smoke, park, RFID sensor, Direction) - ON / OFF SWITCH control
 
   if (GUI_data == 101) {
     sendDataDccpp("<f 3 144>");                         // Lights ON / OFF
@@ -124,26 +125,7 @@ void parseIncomingData() {
       smoke_switch = 0;
       sas = 1;
     }
-
-    if (GUI_data == 161) {
-      sendDataDccpp("<f 3 184>");                       // Sound ON / OFF
-      sound_switch = 1;
-      sas = 1;
-    } else if (GUI_data == 160) {
-      sendDataDccpp("<f 3 184>");
-      sound_switch = 0;
-      sas = 1;
-    }
-  }
-
-  if (sas == 1) {
-    if ((sound_switch == 0) && (smoke_switch == 0)) { sendDataDccpp("<f 3 176>"); }
-    if ((sound_switch == 1) && (smoke_switch == 0)) { sendDataDccpp("<f 3 184>"); }
-    if ((sound_switch == 0) && (smoke_switch == 1)) { sendDataDccpp("<f 3 177>"); }   
-    if ((sound_switch == 1) && (smoke_switch == 1)) { sendDataDccpp("<f 3 185>"); }
-    sas = 0;
-  }
-  
+      
   if (GUI_data == 251) {RFID_sensor = 1;}             // RFID sensor ON / OFF
   else if (GUI_data == 250) {RFID_sensor = 0;}
 
@@ -154,56 +136,33 @@ void parseIncomingData() {
   else if (GUI_data == 254) {train_direction = 0;}    // Direction FWD / REV
 
 
-// Park function
-
-  if (park_switch == 1) {
-    if (train_direction == 1) {
-      if (RFID_data == 10) {train_speed = 4;}           // Trigger 1
-      if (RFID_data == 11) {train_speed = 2;}           // Trigger 2
-      if (RFID_data == 12) {train_speed = 0;}           // Park
+    if (GUI_data == 161) {
+      sendDataDccpp("<f 3 184>");                     // Sound ON / OFF
+      sound_switch = 1;
+      sas = 1;
+    } else if (GUI_data == 160) {
+      sendDataDccpp("<f 3 184>");
+      sound_switch = 0;
+      sas = 1;
     }
   }
 
-
-//  RFID tag initiated sound and speed control 
-
-  if (RFID_sensor == 1) { 
-
-    if (RFID_data == 4) {
-      sendDataDccpp("<f 3 129>");                       // Bell from RFID
-      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel bell after Sound_Delay
-    }
-
-    if (RFID_data == 1) {
-      sendDataDccpp("<f 3 130>");                       // Train whistles - long
-    }
-
-    if (RFID_data == 2) {
-      sendDataDccpp("<f 3 132>");                       // Train whistle
-      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle
-    }
-
-    if (RFID_data == 3) {
-      sendDataDccpp("<f 3 136>");                       // Train whistle - short
-      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle - short
-    }
-
-    if (train_direction == 1) {
-      if (RFID_data == 5) {train_speed = 3;}
-      else if (RFID_data == 6) {train_speed = 6;}
-      else if (RFID_data == 7) {train_speed = 9;}
-    }
+  if (sas == 1) {                                     // Light and Smoke switches have the same OFF code.  This avoids conflict in operation:
+    if ((sound_switch == 0) && (smoke_switch == 0)) { sendDataDccpp("<f 3 176>"); }
+    if ((sound_switch == 1) && (smoke_switch == 0)) { sendDataDccpp("<f 3 184>"); }
+    if ((sound_switch == 0) && (smoke_switch == 1)) { sendDataDccpp("<f 3 177>"); }   
+    if ((sound_switch == 1) && (smoke_switch == 1)) { sendDataDccpp("<f 3 185>"); }
+    sas = 0;
   }
 
 
-//  GUI initiated speed control (Start / Faster, Stop / Slower) - PUSH BUTTON control
+//  GUI initiated speed control (Start / Faster speed, Slower speed, Stop) - PUSH BUTTON control
 
-  if (GUI_data == 7) {train_speed = train_speed + 1; delay(50);}
-  if (GUI_data == 8) {train_speed = train_speed - 1; delay(50);}  
-  
-  if (train_speed >= 10) {train_speed = 10;}
-  if (train_speed <= 0) {train_speed = 0;}
+  // Train Start / Faster /Slower
+  if (GUI_data == 7) {train_speed = train_speed + 1;}     
+  if (GUI_data == 8) {train_speed = train_speed - 1;} 
 
+  // Speed switch
   switch (train_speed) {
     case 0:
       if (train_direction == 1) {sendDataDccpp("<t 1 03 0 1>");}
@@ -251,11 +210,65 @@ void parseIncomingData() {
       break;
   }
 
-  sendDataGui((train_speed * 10), 0);
+  if (train_speed >= 10) {train_speed = 10;}
+  if (train_speed <= 0) {train_speed = 0;}   
 
-  if (GUI_data == 9) {sendDataDccpp("<t 1 03 -1 1>");}  // Emergency STOP
+  // Train stop
+  if (GUI_data == 9) {                        // Train stop
+    sendDataDccpp("<t 1 03 -1 1>");
+    train_speed = 0;
+    }  
 
+
+//  RFID tag initiated sound, speed, and park function control 
+
+  // Sound
+  if (RFID_sensor == 1) { 
+
+    if (RFID_data == 42) {      sendDataDccpp("<f 3 130>");                       // Train whistles - long
+    }
+
+    if (RFID_data == 43) {
+      sendDataDccpp("<f 3 132>");                       // Train whistle
+      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle
+    }
+
+    if (RFID_data == 44) {
+      sendDataDccpp("<f 3 136>");                       // Train whistle - short
+      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle - short
+    }
+
+    if (RFID_data == 41) {
+      sendDataDccpp("<f 3 129>");                       // Bell from RFID
+      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel bell after Sound_Delay
+    }
+  }  
+
+  // RFID speed function
+  if (RFID_data == 20) {train_speed = 2;}               // Train speed 20%
+    else if (RFID_data == 21) {train_speed = 4;}        // Train speed 40%
+    else if (RFID_data == 22) {train_speed = 6;}        // Train speed 60%
+    else if (RFID_data == 23) {train_speed = 8;}        // Train speed 80%
+    else if (RFID_data == 24) {train_speed = 10;}       // Train speed 100%
+
+  // Park function
+  if (park_switch == 1) {
+    if (train_direction == 1) {
+      if (RFID_data == 31) {train_speed = 4;}           // Trigger 1 - Speed 40%
+      if (RFID_data == 32) {train_speed = 2;}           // Trigger 2 - Speed 20%
+      if (RFID_data == 33) {train_speed = 0;}           // Park
+    }
   }
+
+  // Sends train_speed to GUI if there has been a speed change
+  if (train_speed != train_speed_hold) {
+    sendDataGui(((train_speed * 10) + 100), 0);
+    }
+
+    train_speed_hold = train_speed;   
+
+  
+  }  // End of 'if serial available loop
 
 
 
