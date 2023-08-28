@@ -150,6 +150,7 @@ void sendDataCentral(int data, unsigned long int delay) {
   }
 }
 
+
 int receiveCentralData() {
   if (Serial1.available()) {
     return Serial1.read();
@@ -332,17 +333,18 @@ BLYNK_WRITE(V41) {                // AM F1
     sendDataCentral(41);
     display.centeredDisplay("Bell", D_DELAY);
   }
+  else if (pinValue == 0) {}
 }
 
-BLYNK_WRITE(V42) {                // AM F2
+BLYNK_WRITE(V42) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
     sendDataCentral(42);
-    display.centeredDisplay("Long", "Whistles", D_DELAY);
+    display.centeredDisplay("Long", "whistles", D_DELAY);
   }
 }
 
-BLYNK_WRITE(V43) {                // AM F3
+BLYNK_WRITE(V43) {
   int pinValue = param.asInt();
   if (pinValue == 1) {
     sendDataCentral(43);
@@ -356,20 +358,21 @@ BLYNK_WRITE(V44) {                // AM F4
     sendDataCentral(44);
     display.centeredDisplay("Short", "Whistle", D_DELAY);
   }
+  else if (pinValue == 0) {}
 }
 
 BLYNK_WRITE(V45) {                // AM Open F5
   int pinValue = param.asInt();
   if (pinValue == 1) {
-  } else if (pinValue == 0) {
-  }
+  } 
+  else if (pinValue == 0) {}
 }
 
 BLYNK_WRITE(V46) {                // AM Open F6
   int pinValue = param.asInt();
   if (pinValue == 1) {
-  } else if (pinValue == 0) {
-  }
+  } 
+  else if (pinValue == 0) {}
 }
 
 BLYNK_WRITE(V47) {                // AM Open F7
@@ -634,7 +637,6 @@ BLYNK_WRITE(V79) {                // K3 Open F14
   } else if (pinValue == 0) {
   }
 }
-
 
 
 

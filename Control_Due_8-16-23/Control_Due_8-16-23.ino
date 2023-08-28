@@ -11,7 +11,7 @@ SimpleTimer timer;
 #define D_HEIGHT 64                                         // Display heighy
 #define D_WIDTH 128                                         // Display width
 #define D_DELAY 1000                                        // Delay after which to clear the Display
-#define Sound_Delay 1000                                    // Delay after which to cancel sound
+#define Sound_Delay 3000                                    // Delay after which to cancel sound
 #define SD 500                                              // speed delay
 #define RFID_READY_PIN A4
 
@@ -102,26 +102,26 @@ void parseIncomingData() {
 
   if ((GUI_data != 39) && (active == -1)) {
 
-    if (GUI_data >= 0) {display.centeredDisplay("GUI Cmd", "Received" ,D_DELAY );}
-    if (RFID_data > 0) {display.centeredDisplay("RFID Cmd", "Received" , D_DELAY);}
+    if (GUI_data >= 0) {display.centeredDisplay("GUI Cmd", "Received", D_DELAY );}
+    if ((RFID_sensor == 1) && (RFID_data > 0)) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY);}
   }
 
 
 //  GUI initiated train functions (lights, sound, smoke, park, RFID sensor, Direction) - ON / OFF SWITCH control
 
   if (GUI_data == 101) {
-    sendDataDccpp("<f 3 144>");                         // Lights ON / OFF
+    sendDataDccpp("<f 3 144>");                       // Lights ON / OFF
   } else if (GUI_data == 100) {
       sendDataDccpp("<f 3 128>");
     }
 
   if (sas == 0) {
     if (GUI_data == 151){
-      sendDataDccpp("<f 3 177>");                       // Smoke ON / OFF
+  //    sendDataDccpp("<f 3 177>");                    // Smoke ON / OFF
       smoke_switch = 1;
       sas = 1;
     } else if (GUI_data == 150) {
-      sendDataDccpp("<f 3 176>");
+  //    sendDataDccpp("<f 3 176>");
       smoke_switch = 0;
       sas = 1;
     }
@@ -137,17 +137,17 @@ void parseIncomingData() {
 
 
     if (GUI_data == 161) {
-      sendDataDccpp("<f 3 184>");                     // Sound ON / OFF
+  //    sendDataDccpp("<f 3 184>");                     // Sound ON / OFF
       sound_switch = 1;
       sas = 1;
     } else if (GUI_data == 160) {
-      sendDataDccpp("<f 3 184>");
+  //    sendDataDccpp("<f 3 184>");
       sound_switch = 0;
       sas = 1;
     }
   }
 
-  if (sas == 1) {                                     // Light and Smoke switches have the same OFF code.  This avoids conflict in operation:
+  if (sas == 1) {                                     //  Sound and Smoke switches have the same OFF code.  This avoids conflict in operation:
     if ((sound_switch == 0) && (smoke_switch == 0)) { sendDataDccpp("<f 3 176>"); }
     if ((sound_switch == 1) && (smoke_switch == 0)) { sendDataDccpp("<f 3 184>"); }
     if ((sound_switch == 0) && (smoke_switch == 1)) { sendDataDccpp("<f 3 177>"); }   
@@ -225,38 +225,40 @@ void parseIncomingData() {
   // Sound
   if (RFID_sensor == 1) { 
 
-    if (RFID_data == 42) {      sendDataDccpp("<f 3 130>");                       // Train whistles - long
+    if (RFID_data == 42) {
+      sendDataDccpp("<f 3 130>");                       // Train whistles - long
+      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistles after Sound_Delay
     }
 
     if (RFID_data == 43) {
       sendDataDccpp("<f 3 132>");                       // Train whistle
-      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle
+      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle after Sound_Delay
     }
 
     if (RFID_data == 44) {
       sendDataDccpp("<f 3 136>");                       // Train whistle - short
-      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train whistle - short
+      sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel train short whistle after Sound_Delay
     }
 
     if (RFID_data == 41) {
       sendDataDccpp("<f 3 129>");                       // Bell from RFID
       sendDataDccpp("<f 3 128>", Sound_Delay);          // Cancel bell after Sound_Delay
     }
-  }  
-
+  
   // RFID speed function
-  if (RFID_data == 20) {train_speed = 2;}               // Train speed 20%
-    else if (RFID_data == 21) {train_speed = 4;}        // Train speed 40%
-    else if (RFID_data == 22) {train_speed = 6;}        // Train speed 60%
-    else if (RFID_data == 23) {train_speed = 8;}        // Train speed 80%
-    else if (RFID_data == 24) {train_speed = 10;}       // Train speed 100%
+  if (RFID_data == 20) {train_speed = 20; sendDataDccpp("<t 1 03 20 1>");}               // Train speed 20%
+    else if (RFID_data == 21) {train_speed = 40;sendDataDccpp("<t 1 03 40 1>");}         // Train speed 40%
+    else if (RFID_data == 22) {train_speed = 60;sendDataDccpp("<t 1 03 60 1>");}         // Train speed 80%
+    else if (RFID_data == 24) {train_speed = 100;sendDataDccpp("<t 1 03 100 1>");}       // Train speed 100%
+
+  }
 
   // Park function
   if (park_switch == 1) {
     if (train_direction == 1) {
-      if (RFID_data == 31) {train_speed = 4;}           // Trigger 1 - Speed 40%
-      if (RFID_data == 32) {train_speed = 2;}           // Trigger 2 - Speed 20%
-      if (RFID_data == 33) {train_speed = 0;}           // Park
+      if (RFID_data == 31) {train_speed = 40;sendDataDccpp("<t 1 03 40 1>");}           // Trigger 1 - Speed 40%
+      if (RFID_data == 32) {train_speed = 20;sendDataDccpp("<t 1 03 20 1>");}           // Trigger 2 - Speed 20%
+      if (RFID_data == 33) {train_speed =  0;sendDataDccpp("<t 1 03 -1 1>");}          // Park
     }
   }
 
@@ -264,11 +266,9 @@ void parseIncomingData() {
   if (train_speed != train_speed_hold) {
     sendDataGui(((train_speed * 10) + 100), 0);
     }
-
     train_speed_hold = train_speed;   
-
   
-  }  // End of 'if serial available loop
+  }  // End of 'if serial available' loop
 
 
 
@@ -277,56 +277,60 @@ void parseIncomingData() {
   if (GUI_data == 41) {
     sendDataDccpp("<f 3 129>");                         // AM F1 Bell from GUI or RFID
     sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel bell after Sound_Delay
+    delay(5000);
   }
 
   if (GUI_data == 42) {
     sendDataDccpp("<f 3 130>");                         // AM F2 Long whistles
+    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel long whistles after Sound_Delay
   }
 
   if (GUI_data == 43) {
     sendDataDccpp("<f 3 132>");                         // AM F3 Whistle
-    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel train whistle
+    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel train whistle after Sound_Delay
   }
 
   if (GUI_data == 44) {
     sendDataDccpp("<f 3 136>");                         // AM F4 Short whistle
-    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel short whistle
+    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel short whistle after Sound_Delay
   }
 
   if (GUI_data == 45) {}                                // AM F5 Smoke ON/OFF via Smoke switch (V2)
 
-  if (GUI_data == 46) {}                                // AM F6 Mute ON/OFF via Sound switch (V5)
+  if (GUI_data == 46) {}                                // AM Open F6
 
   if (GUI_data == 47) {}                                // AM Open F7
 
-  if (GUI_data == 48) {}                                // AM Unused F8 - Sound toggle
+  if (GUI_data == 48) {}                                // AM F8 Sound ON/OFF via Sound switch (V5)
 
   if (GUI_data == 49) {
     sendDataDccpp("<f 3 161>");                         // AM F9 Wheels squealing
-    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel brake squeal
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel wheels squealing after Sound_Delay
   }
 
   if (GUI_data == 50) {
     sendDataDccpp("<f 3 162>");                         // AM 50 Shoveling coal
-    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel shoveling coal
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel shoveling coal after Sound_Delay
   }
 
   if (GUI_data == 51) {
     sendDataDccpp("<f 3 164>");                         // Blower sound
-    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel blower
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel blower after Sound_Delay
   }
 
   if (GUI_data == 52) {
     sendDataDccpp("<f 3 168>");                         // Coupler/Uncoupler
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel coupler/uncoupler after Sound_Delay
   }
 
   if (GUI_data == 53) {
     sendDataDccpp("<f 3 222 1>");                       // Coal dropping
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel coal dropping after Sound_Delay
   }
 
   if (GUI_data == 54) {
     sendDataDccpp("<f 3 222 2>");                       // Steam venting
-    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel steam
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel steam venting after Sound_Delay
   }
 
   if (GUI_data == 55) {}                                // AM Open F15
@@ -335,27 +339,27 @@ void parseIncomingData() {
 
   if (GUI_data == 57) {
     sendDataDccpp("<f 3 222 16>");                      // AM F17 Conductor calling "All Aboard"
-    sendDataDccpp("<f 3 222 0>", Sound_Delay);
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel conductor calling after Sound_Delay
   }
 
   if (GUI_data == 58) {
     sendDataDccpp("<f 3 222 32>");                      // AM F18 Generator sound
-    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel generator
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel generator sound after Sound_Delay
   }
 
   if (GUI_data == 59) {
     sendDataDccpp("<f 3 222 64>");                      // AM F19 Air pump
-    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel air pump
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel air pump after Sound_Delay
   }
 
   if (GUI_data == 60) {
     sendDataDccpp("<f 3 222 128>");                     // AM F20 Coal unloading into hopper
-    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel coal unloading
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel coal unloading after Sound_Delay
   }
 
   if (GUI_data == 61) {
     sendDataDccpp("<f 3 223 1>");                       // AM F21 Water filling tank
-    sendDataDccpp("<f 3 223 0>", Sound_Delay);          // Cancel water filling tank
+    sendDataDccpp("<f 3 223 0>", Sound_Delay);          // Cancel water filling tank after Sound_Delay
   }
 
   if (GUI_data == 62) {}                                // AM Open F22
@@ -364,6 +368,7 @@ void parseIncomingData() {
 
   if (GUI_data == 64) {}                                // AM Open F24
 
+/*
 
 // K3 Stainz (K3) Sounds/Functions triggered by GUI input - Push button control
 
@@ -373,56 +378,67 @@ void parseIncomingData() {
 
   if (GUI_data == 67) {
     sendDataDccpp("<f 3 130>");                         // K3 F2 Conductor calling "All Aboard"
+    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel conductor calling after Sound_Delay
   }
 
   if (GUI_data == 68) {
-    sendDataDccpp("<f 3 132>");                         // K3 F3 Conductors whistle
+    sendDataDccpp("<f 3 132>");                         // K3 F3 Conductor's whistle
+    sendDataDccpp("<f 3 128>", Sound_Delay);            // Cancel conductor's whistle after Sound_Delay
   }
 
   if (GUI_data == 69) {}                                // K3 Open F4
 
   if (GUI_data == 70) {
     sendDataDccpp("<f 3 177>");                         // K3 F5 Coal shoveling
-    sendDataDccpp("<f 3 176>", Sound_Delay);            // Cancel coal shoveling
+    sendDataDccpp("<f 3 176>", Sound_Delay);            // Cancel coal shoveling after Sound_Delay
   }
 
   if (GUI_data == 71) {
     sendDataDccpp("<f 3 178>");                         // K3 F6 Injector sound
+    sendDataDccpp("<f 3 176>", Sound_Delay);            // Cancel injector after Sound_Delay
   }
 
   if (GUI_data == 72) {
     sendDataDccpp("<f 3 180>");                         // K3 F7 Bell
-    sendDataDccpp("<f 3 176>", Sound_Delay);            // Cancel Bell
+    sendDataDccpp("<f 3 176>", Sound_Delay);            // Cancel Bell after Sound_Delay
   }
 
   if (GUI_data == 73) {}                                // K3 F8 Sound ON/OFF toggle via V3
 
   if (GUI_data == 74) {
     sendDataDccpp("<f 3 161>");                         // K3 F9 Whistle
-    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel Whistle
-  }
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel Whistle after Sound_Delay
+  } 
 
   if (GUI_data == 75) {
-    sendDataDccpp("<f 3 162>");                         // K3 F10 Coupler / uncoupler
+    sendDataDccpp("<f 3 162>");                         // K3 F10 Coupler/uncoupler
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel coupler/uncoupler after Sound_Delay
   }
 
   if (GUI_data == 76) {
     sendDataDccpp("<f 3 164>");                         // K3 F11 Air pump
-    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel air pump
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel air pump after Sound_Delay
   }
 
   if (GUI_data == 77) {
     sendDataDccpp("<f 3 168>");                         // K3 F12 Boiler sound
-    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel boiler sound
+    sendDataDccpp("<f 3 160>", Sound_Delay);            // Cancel boiler sound after Sound_Delay
   }
 
   if (GUI_data == 78) {
     sendDataDccpp("<f 3 222 1>");                       // K3 F13 Steam venting
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);          // Cancel steam venting after Sound_Delay
   }
 
   if (GUI_data == 79) {}                                // K3 Open F14
 
-}
+
+*/
+
+
+}  // End of Parse data loop
+
+
 
 // Helper Functions
 
