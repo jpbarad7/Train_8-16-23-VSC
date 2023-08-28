@@ -38,6 +38,7 @@ int train_direction = 1;
 int train_speed = 0;
 int train_speed_hold = 0;
 int speed_switch = 0;
+int station_number_data = 0;
 
 
 //Serial connections
@@ -86,15 +87,16 @@ void parseIncomingData() {
     GUI_data = Serial2.read();
     RFID_data = Serial1.read();
 
-// Relays data received from the RFID board re station 1-4 tags to the ESP32 GUI
-
-  if (RFID_data >= 20 && RFID_data <= 44) {sendDataGui(RFID_data);}
+  if (RFID_data >= 25 && RFID_data <= 29) {               //  Sends Station # data from RFID reader to ESP-32 for display on GUI
+    sendDataGui(RFID_data);
+    station_number_data = 1;}
+    else {station_number_data = 0;}   
 
   if ((GUI_data == 39) && (RFID_READY == LOW) && (active == 0)) {   
 
     sendDataDccpp("<0>");                                 // Turns power to DCC++ rails (communication lines) off
     sendDataDccpp("<1>", 100);                            // Turns power to DCC++ rails on 
-    delay(3000);                                          // Pleasing interval between Wifi Connected and Train Ready
+    delay(2500);                                          // Pleasing interval between Wifi Connected and Train Ready
     sendDataDccpp("<f 3 184>", 200);
     display.centeredDisplay("Train", "Ready", 1200);
     active = -1;
@@ -103,9 +105,13 @@ void parseIncomingData() {
   if ((GUI_data != 39) && (active == -1)) {
 
     if (GUI_data >= 0) {display.centeredDisplay("GUI Cmd", "Received", D_DELAY );}
-    if ((RFID_sensor == 1) && (RFID_data > 0)) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY);}
-  }
 
+    if (RFID_data > 0) {
+      if (RFID_sensor == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
+      if (station_number_data == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
+    } 
+
+  }
 
 //  GUI initiated train functions (lights, sound, smoke, park, RFID sensor, Direction) - ON / OFF SWITCH control
 
@@ -113,17 +119,6 @@ void parseIncomingData() {
     sendDataDccpp("<f 3 144>");                       // Lights ON / OFF
   } else if (GUI_data == 100) {
       sendDataDccpp("<f 3 128>");
-    }
-
-  if (sas == 0) {
-    if (GUI_data == 151){
-  //    sendDataDccpp("<f 3 177>");                    // Smoke ON / OFF
-      smoke_switch = 1;
-      sas = 1;
-    } else if (GUI_data == 150) {
-  //    sendDataDccpp("<f 3 176>");
-      smoke_switch = 0;
-      sas = 1;
     }
       
   if (GUI_data == 251) {RFID_sensor = 1;}             // RFID sensor ON / OFF
@@ -135,17 +130,21 @@ void parseIncomingData() {
   if (GUI_data == 255) {train_direction = 1;}
   else if (GUI_data == 254) {train_direction = 0;}    // Direction FWD / REV
 
-
-    if (GUI_data == 161) {
-  //    sendDataDccpp("<f 3 184>");                     // Sound ON / OFF
+  if (GUI_data == 161) {                              // Sound ON / OFF            
       sound_switch = 1;
       sas = 1;
     } else if (GUI_data == 160) {
-  //    sendDataDccpp("<f 3 184>");
       sound_switch = 0;
       sas = 1;
     }
-  }
+                                 
+  if (GUI_data == 151){                             // Smoke ON / OFF                
+      smoke_switch = 1;
+      sas = 1;
+    } else if (GUI_data == 150) {
+      smoke_switch = 0;
+      sas = 1;
+    }
 
   if (sas == 1) {                                     //  Sound and Smoke switches have the same OFF code.  This avoids conflict in operation:
     if ((sound_switch == 0) && (smoke_switch == 0)) { sendDataDccpp("<f 3 176>"); }
@@ -258,7 +257,7 @@ void parseIncomingData() {
     if (train_direction == 1) {
       if (RFID_data == 31) {train_speed = 40;sendDataDccpp("<t 1 03 40 1>");}           // Trigger 1 - Speed 40%
       if (RFID_data == 32) {train_speed = 20;sendDataDccpp("<t 1 03 20 1>");}           // Trigger 2 - Speed 20%
-      if (RFID_data == 33) {train_speed =  0;sendDataDccpp("<t 1 03 -1 1>");}          // Park
+      if (RFID_data == 33) {train_speed =  0;sendDataDccpp("<t 1 03 -1 1>");}           // Park
     }
   }
 
@@ -268,9 +267,6 @@ void parseIncomingData() {
     }
     train_speed_hold = train_speed;   
   
-  }  // End of 'if serial available' loop
-
-
 
 // American Mogul (AM) Sounds/Functions triggered by GUI input - Push button control
 
@@ -368,7 +364,6 @@ void parseIncomingData() {
 
   if (GUI_data == 64) {}                                // AM Open F24
 
-/*
 
 // K3 Stainz (K3) Sounds/Functions triggered by GUI input - Push button control
 
@@ -431,14 +426,11 @@ void parseIncomingData() {
   }
 
   if (GUI_data == 79) {}                                // K3 Open F14
+ 
 
+  }  // End of 'if Serial.available()' loop
 
-*/
-
-
-}  // End of Parse data loop
-
-
+}    // End of 'parseIncomingData()' loop 
 
 // Helper Functions
 
