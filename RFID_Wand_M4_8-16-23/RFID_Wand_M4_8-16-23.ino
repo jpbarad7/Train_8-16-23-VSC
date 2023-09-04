@@ -12,9 +12,9 @@
 #define BUTTON_C 5
 
 // Diplay parameters
-#define D_HEIGHT 64   //Display height
-#define D_WIDTH 128   //Display width
-#define D_DELAY 1000  // how many miliseconds after which to clear the display
+#define D_HEIGHT 64   // Display height
+#define D_WIDTH 128   // Display width
+#define D_DELAY 1000  // Clears display after this many milliseconds
 
 //Display instance
 //Note this is our _Ext or extention of the Adafruit library to include the following functions:

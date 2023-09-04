@@ -175,21 +175,23 @@ void sendAndDisplayCommand(int trainCommandIndex) {
 }
 
 void setup() {
+  delay(500);                                       // Allow time for Due to start up
+  
   pinMode(RFID_READY_PIN, OUTPUT);
 
   Serial1.begin(115200);
 
-  SPI.begin();         // Init SPI bus
-  mfrc522.PCD_Init();  // Init MFRC522 card
+  SPI.begin();                                       // Init SPI bus
+  mfrc522.PCD_Init();                                // Init MFRC522 card
   mfrc522.PCD_SetAntennaGain(mfrc522.RxGain_max);
  
   //Set up Display
   display.begin(0x3C, true);
-  display.setRotation(3);                            //Landscape Mode with USB at top left
-  display.setTextSize(2);                            //Character are 10 pixels wide and 16 pixels high
-  display.setTextColor(SH110X_WHITE, SH110X_BLACK);  //Added a back ground color for printing text, so can overwrite other characters
+  display.setRotation(3);                            // Landscape Mode with USB at top left
+  display.setTextSize(2);                            // Character are 10 pixels wide and 16 pixels high
+  display.setTextColor(SH110X_WHITE, SH110X_BLACK);  // Added a back ground color for printing text, so can overwrite other characters
 
-  digitalWrite(RFID_READY_PIN, LOW);  //  LOW output required to achieve 'Train ready' state on Due
+  digitalWrite(RFID_READY_PIN, LOW);                 //  LOW output required to achieve 'Train ready' state on Due
   display.centeredDisplay("RFID", "Ready", D_DELAY);
 
   // Prepare the key (used both as key A and as key B)

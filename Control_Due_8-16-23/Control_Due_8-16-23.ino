@@ -11,9 +11,9 @@ SimpleTimer timer;
 #define D_HEIGHT 64                                         // Display heighy
 #define D_WIDTH 128                                         // Display width
 #define D_DELAY 1000                                        // Delay after which to clear the Display
-#define Sound_Delay 3000                                    // Delay after which to cancel sound
+#define Sound_Delay 1000                                    // Delay after which to cancel sound
 #define SD 500                                              // speed delay
-#define RFID_READY_PIN A4
+#define RFID_READY_PIN 4                                    // RFID M4 sends a LOW signal when it's operational
 
 // Display instance
 // Note this is our _Ext or extention of the Adafruit library to include the following functions:
@@ -57,6 +57,8 @@ void sendDataGui(int data, unsigned long int delay = 0);
 
 void setup() {
 
+  delay (1000);                                         // Allows Decoder and RFID MCUs to complete start up
+
   pinMode(RFID_READY_PIN, INPUT_PULLUP);
 
   Serial1.begin(115200);                                // RFID M4
@@ -79,9 +81,8 @@ void loop() {
   display.timerRun();
 }
 
-void parseIncomingData() {
 
-  RFID_READY = digitalRead(RFID_READY_PIN);
+void parseIncomingData() {
 
   if ((Serial2.available() > 0) || (Serial1.available() > 0)) {
     GUI_data = Serial2.read();
@@ -90,28 +91,34 @@ void parseIncomingData() {
   if (RFID_data >= 25 && RFID_data <= 29) {               //  Sends Station # data from RFID reader to ESP-32 for display on GUI
     sendDataGui(RFID_data);
     station_number_data = 1;}
-    else {station_number_data = 0;}   
+    else {station_number_data = 0;}  
 
-  if ((GUI_data == 39) && (RFID_READY == LOW) && (active == 0)) {   
+//  RFID_READY = digitalRead(RFID_READY_PIN);
 
+  if ((GUI_data == 39) && (active == 0)) {
+
+    delay (1500);                                         // Asthetically pleasing interval between 'WiFi available' and 'Train Ready'
+ 
+    // Activate Decoder
     sendDataDccpp("<0>");                                 // Turns power to DCC++ rails (communication lines) off
     sendDataDccpp("<1>", 100);                            // Turns power to DCC++ rails on 
-    delay(2500);                                          // Pleasing interval between Wifi Connected and Train Ready
-    sendDataDccpp("<f 3 184>", 200);
+    sendDataDccpp("<f 3 184>", 200);                      // Start sound program
+
     display.centeredDisplay("Train", "Ready", 1200);
-    active = -1;
+
+    sendDataDccpp("<f 3 222 16>", 4500);                        // AM F17 Conductor calling "All Aboard"
+    sendDataDccpp("<f 3 222 0>", Sound_Delay);            // Cancel conductor calling after Sound_Delay
+
+    active = 1;
   }
 
-  if ((GUI_data != 39) && (active == -1)) {
+  if ((GUI_data >= 0) && (GUI_data != 39)) {display.centeredDisplay("GUI Cmd", "Received", D_DELAY );}
 
-    if (GUI_data >= 0) {display.centeredDisplay("GUI Cmd", "Received", D_DELAY );}
+  if (RFID_data > 0) {
+    if (RFID_sensor == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
+    if (station_number_data == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
+  } 
 
-    if (RFID_data > 0) {
-      if (RFID_sensor == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
-      if (station_number_data == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
-    } 
-
-  }
 
 //  GUI initiated train functions (lights, sound, smoke, park, RFID sensor, Direction) - ON / OFF SWITCH control
 
@@ -245,19 +252,19 @@ void parseIncomingData() {
     }
   
   // RFID speed function
-  if (RFID_data == 20) {train_speed = 20; sendDataDccpp("<t 1 03 20 1>");}               // Train speed 20%
-    else if (RFID_data == 21) {train_speed = 40;sendDataDccpp("<t 1 03 40 1>");}         // Train speed 40%
-    else if (RFID_data == 22) {train_speed = 60;sendDataDccpp("<t 1 03 60 1>");}         // Train speed 80%
-    else if (RFID_data == 24) {train_speed = 100;sendDataDccpp("<t 1 03 100 1>");}       // Train speed 100%
+  if (RFID_data == 20) {train_speed = 2; sendDataDccpp("<t 1 03 20 1>");}               // Train speed 20%
+    else if (RFID_data == 21) {train_speed = 4;sendDataDccpp("<t 1 03 40 1>");}         // Train speed 40%
+    else if (RFID_data == 22) {train_speed = 6;sendDataDccpp("<t 1 03 60 1>");}         // Train speed 80%
+    else if (RFID_data == 24) {train_speed = 10;sendDataDccpp("<t 1 03 100 1>");}       // Train speed 100%
 
   }
 
   // Park function
   if (park_switch == 1) {
     if (train_direction == 1) {
-      if (RFID_data == 31) {train_speed = 40;sendDataDccpp("<t 1 03 40 1>");}           // Trigger 1 - Speed 40%
-      if (RFID_data == 32) {train_speed = 20;sendDataDccpp("<t 1 03 20 1>");}           // Trigger 2 - Speed 20%
-      if (RFID_data == 33) {train_speed =  0;sendDataDccpp("<t 1 03 -1 1>");}           // Park
+      if (RFID_data == 31) {train_speed = 5;sendDataDccpp("<t 1 03 50 1>");}           // Trigger 1 - Speed 40%
+      if (RFID_data == 32) {train_speed = 3;sendDataDccpp("<t 1 03 30 1>");}           // Trigger 2 - Speed 20%
+      if (RFID_data == 25) {train_speed = 0;sendDataDccpp("<t 1 03 -1 1>");}           // Park at Station 1
     }
   }
 
