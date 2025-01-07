@@ -40,6 +40,8 @@ int train_speed_hold = 0;
 int speed_switch = 0;
 int station_number_data = 0;
 
+unsigned long previousMillis = 0;
+
 
 //Serial connections
 //Serial1 is RFID connection
@@ -112,12 +114,59 @@ void parseIncomingData() {
     active = 1;
   }
 
-  if ((GUI_data >= 0) && (GUI_data != 39)) {display.centeredDisplay("GUI Cmd", "Received", D_DELAY );}
+  if ((GUI_data >= 0) && (GUI_data != 39)) {
+    display.setCursor(17, 14);
+    display.print("GUI data");
+    display.display();
+
+    if (GUI_data < 10) {
+      display.setCursor(62, 35);
+      display.print(GUI_data); 
+      display.display();
+    }
+
+    if ((GUI_data >= 10) && (GUI_data < 100)) {
+      display.setCursor(56, 35);
+      display.print(GUI_data); 
+      display.display(); 
+    }
+
+    if (GUI_data >= 100) {
+      display.setCursor(46, 35);
+      display.print(GUI_data); 
+      display.display(); 
+    }
+    
+    delay(1000); display.clearDisplay(); display.display();
+  }
 
   if (RFID_data > 0) {
-    if (RFID_sensor == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
-    if (station_number_data == 1) {display.centeredDisplay("RFID Cmd", "Received", D_DELAY );}
-  } 
+    if ((RFID_sensor == 1) || (station_number_data == 1)) {
+      display.setCursor(12, 14);
+      display.print("RFID data");
+      display.display();
+
+      if (RFID_data < 10) {
+        display.setCursor(62, 35);
+        display.print(RFID_data); 
+        display.display();
+      }  
+
+      if ((RFID_data >= 10) && (RFID_data < 100)) {
+        display.setCursor(56, 35);
+        display.print(RFID_data); 
+        display.display(); 
+      }
+
+      if (RFID_data >= 100) {
+        display.setCursor(46, 35);
+        display.print(RFID_data); 
+        display.display(); 
+      }
+
+     delay(1000); display.clearDisplay(); display.display();
+    }   
+  }  
 
 
 //  GUI initiated train functions (lights, sound, smoke, park, RFID sensor, Direction) - ON / OFF SWITCH control

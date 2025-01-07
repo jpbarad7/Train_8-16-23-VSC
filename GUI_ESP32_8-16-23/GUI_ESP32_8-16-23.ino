@@ -1,7 +1,6 @@
 #define BLYNK_TEMPLATE_ID "TMPL27oFosZB8"
 #define BLYNK_TEMPLATE_NAME "Deck Train"
 #define BLYNK_AUTH_TOKEN "HGJM2L_Z9bSIUmTeMgHWPZP1KpRbEHt3"
-
 // Diplay parameters
 #define D_HEIGHT 64  //Display height
 #define D_WIDTH 128  //Display width
@@ -65,8 +64,8 @@ Adafruit_SH1107_Ext display = Adafruit_SH1107_Ext(D_HEIGHT, D_WIDTH, &Wire, 1000
 BlynkTimer timer;  //Using blynk timer but could also use SimpleTimer
 char auth[] = BLYNK_AUTH_TOKEN;
 
-char ssid[] = "SkyWiFi";
-char pass[] = "SkyWiFi8589!";
+char ssid[] = "BR Guest";
+char pass[] = "Pamma355!";
 
 //  char ssid[] = "Train";
 //  char pass[] = "Photon8589";
